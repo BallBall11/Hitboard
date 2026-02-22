@@ -31,4 +31,4 @@ Hitboard Air
 
 //由于卡扣结构的设计极其复杂，牵一发动全身。此型号提供全套 3D 打印文件作为标准答案。
 
-![Hitboard Air](./images/Hitboard_Air.png)
+![Hitboard Air](./images/Hitboard_Air01.png)
