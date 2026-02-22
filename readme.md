@@ -23,7 +23,7 @@ Hitboard Zero
 
 从零开始的起点，为渴望亲手定义操控的创造者而生。纯亚克力多层结构，只需简单修改CAD文件即可调整布局，一切由你决定。这里仅提一套参考布局、PCB 源文件作为灵感，而非定死的答案。288×96mm键盘尺寸无缝融入桌面，双面壁纸让美学随你变换。它是你打造专属控制器的空白画布，也是通往深度定制的第一级台阶。
 
-![Hitboard Zero](./images/Hitboard_Zero.png)
+![Hitboard Zero](./images/HitboardZero.png)
 
 Hitboard Air
 
@@ -31,4 +31,4 @@ Hitboard Air
 
 //由于卡扣结构的设计极其复杂，牵一发动全身。此型号提供全套 3D 打印文件作为标准答案。
 
-![Hitboard Air](./images/Hitboard_Air01.png)
+![Hitboard Air](./images/HitboardAir.png)
