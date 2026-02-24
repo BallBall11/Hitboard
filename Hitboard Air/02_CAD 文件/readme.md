@@ -1,4 +1,4 @@
-### HITBOARD Air - CAD 说明
+### Hitboard Air - CAD 说明
 文件中为 Hitbox 的盖板。提供了 A、B、C 三个型号：
 
     A 带有两个加键（右手大拇指右侧、A 与 X 的左侧）

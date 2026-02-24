@@ -1,4 +1,4 @@
-### HITBOARD Air - 组装指南
+### Hitboard Air - 组装指南
 
 1. 根据「Pico 正面」的引脚示意图，或根据「Pico 背面」印刷的文字，将每个按键的轴座的 1 个引脚接到 Pico 的任意一个 GND 焊盘（圆孔）。
 
