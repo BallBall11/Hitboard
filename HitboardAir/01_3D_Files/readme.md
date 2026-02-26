@@ -11,6 +11,8 @@
     每套按键都提供了一组独立的备用按键，包含 2 个功能键、2 个 23mm 按键，1 个 26mm 按键。
     
 ![HitboardAir 按键](./images/00_按键.png)
+
+![HitboardAir 有刻键帽](./images/有刻键帽.JPG)
     
 01_盖板
 
