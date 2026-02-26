@@ -28,7 +28,7 @@
     
     // 如果有自定义壁纸的需要。可以拿 CAD 文件，去花几块钱买一个 3mm 磨砂亚克力盖板。
     
-    ![HitboardAir 按键](./images/产品实拍_PLA.JPG)
+![HitboardAir 按键](./images/产品实拍_PLA.JPG)
     
 02_定位板
 
@@ -45,7 +45,7 @@
     
     线路板有凹印文字，标记了引脚。飞线时可参考标记接线。
     
-    ![HitboardAir 线路板](./images/03_线路板.PNG)
+![HitboardAir 线路板](./images/03_线路板.PNG)
     
     「more」目录，提供了单独的「功能键小板」文件。方便单独补零件。
 
