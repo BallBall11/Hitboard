@@ -1,6 +1,5 @@
 ### Hitboard Air - 3D打印设置
 
-![HitboardAir 按键](./images/产品实拍_PLA.jpg)
 
 #### 1. 文件说明
 
@@ -30,7 +29,7 @@
     
     // 如果有自定义壁纸的需要。可以拿 CAD 文件，去花几块钱买一个 3mm 磨砂亚克力盖板。
     
-    ![HitboardAir 按键](./images/实拍HitboardLOGO.JPG)
+![HitboardAir 按键](./images/实拍HitboardLOGO.JPG)
     
 02_定位板
 
