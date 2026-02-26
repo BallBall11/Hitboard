@@ -1,9 +1,8 @@
 ### Hitboard Air - 3D打印设置
 
+![HitboardAir 全部打印件](./images/所有3D打印文件示意图.png)
 
 #### 1. 文件说明
-
-![HitboardAir 全部打印件](./images/所有3D打印文件示意图.png)
 
 00_按键
 
