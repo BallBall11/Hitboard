@@ -4,7 +4,7 @@
 
 #### 1. 文件说明
 
-![HitboardAir 全部打印件](./images/工程全文件.png)
+![HitboardAir 全部打印件](./images/所有3D打印文件示意图.png)
 
 00_按键
 
@@ -30,6 +30,7 @@
     
     // 如果有自定义壁纸的需要。可以拿 CAD 文件，去花几块钱买一个 3mm 磨砂亚克力盖板。
     
+    ![HitboardAir 按键](./images/实拍HitboardLOGO.JPG)
     
 02_定位板
 
