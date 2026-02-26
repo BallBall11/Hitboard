@@ -2,7 +2,7 @@
 
 #### 1. 文件说明
 
-![HitboardAir 全部打印件](./images/工程全文件.PNG)
+![HitboardAir 全部打印件](./images/工程全文件.png)
 
 00_按键
 
@@ -10,7 +10,7 @@
 
     每套按键都提供了一组独立的备用按键，包含 2 个功能键、2 个 23mm 按键，1 个 26mm 按键。
     
-    ![HitboardAir 按键](./images/00_按键.PNG)
+![HitboardAir 按键](./images/00_按键.png)
     
 01_盖板
 
@@ -45,7 +45,7 @@
     
     线路板有凹印文字，标记了引脚。飞线时可参考标记接线。
     
-![HitboardAir 线路板](./images/03_线路板.PNG)
+![HitboardAir 线路板](./images/03_线路板.png)
     
     「more」目录，提供了单独的「功能键小板」文件。方便单独补零件。
 
