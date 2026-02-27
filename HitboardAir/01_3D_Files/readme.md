@@ -14,7 +14,9 @@
         
         喜欢拼高达，喜欢口水钳剪零件的同学可以打印这两套按键。
         
-![HitboardAir 有刻键帽](./images/有刻键帽.JPG)
+        // 中框已升级为 ButtonsSystem2.0，可以轻松的从框体取下键帽。
+        
+![HitboardAir 有刻键帽](./images/ButtonSystem2.0.JPG)
 
         每套按键都提供了一组独立的备用按键，包含 2 个功能键、1 个 23mm 按键，1 个 26mm 按键。
         
