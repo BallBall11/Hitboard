@@ -1,5 +1,7 @@
 ### Hitboard Zero PCB（电路板） 说明 
 
+![Hitboard成品图](./PCB_Front.png)
+
 ![Hitboard成品图](./PCB_Back.png)
 
 1. 此电路板文件用做学习参考。务必阅读熟悉每一部分的功能，做到心中有数后再打印 PCB。（不然组装过程中出了问题都不知道从哪儿修）
