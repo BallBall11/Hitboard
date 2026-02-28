@@ -1,4 +1,7 @@
 ### Hitboard Zero CAD 使用说明
+
+![Hitboard成品图](./images/CAD.png)
+
 #### 01 盖板
 
 3-5mm 厚
