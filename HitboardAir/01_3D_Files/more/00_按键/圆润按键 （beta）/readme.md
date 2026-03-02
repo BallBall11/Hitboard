@@ -1,1 +1,1 @@
-![HitboardAir 全部打印件](./效果图.png)
+![HitboardAir 全部打印件](./圆润按键.png)
