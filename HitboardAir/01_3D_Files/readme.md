@@ -49,12 +49,9 @@
 ButtonsSystem 已适配的按键组：
     
     00_Hitboard_Air_硬朗按键_全按键_无刻_带框_反打
-    
-    00_Hitboard_Air_硬朗按键_全按键_无刻_带框_正打
-    
+
     00_Hitboard_Air_圆润按键_全按键_无刻_带框_反打
     
-    00_Hitboard_Air_圆润按键_全按键_无刻_带框_正打
     
     
 
