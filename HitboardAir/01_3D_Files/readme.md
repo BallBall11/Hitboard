@@ -75,8 +75,6 @@ ButtonsSystem 已适配的按键组：
 
 用作产品上盖。
 // 如果有自定义壁纸的需要。可以拿 CAD 文件，去花几块钱买一个 3mm 磨砂亚克力盖板。
-    
-![HitboardAir 有刻键帽](./images/产品实拍_PLA.jpg)    
 
 盖板新增了 Logo
     
