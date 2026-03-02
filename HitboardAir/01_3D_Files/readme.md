@@ -76,7 +76,8 @@ ButtonsSystem 已适配的按键组：
 用作产品上盖。
 // 如果有自定义壁纸的需要。可以拿 CAD 文件，去花几块钱买一个 3mm 磨砂亚克力盖板。
     
-    
+![HitboardAir 有刻键帽](./images/产品实拍_PLA.jpg)    
+
 盖板新增了 Logo
     
         “跟人约战街霸，对方没听过 Hitboard。你掏出设备，一个没有 Logo 的 3D 打印件——对方看了一眼，没说话。”
@@ -86,8 +87,7 @@ ButtonsSystem 已适配的按键组：
         “尴尬。”
 
         “Logo 不一定为了让别人认出来。有时候，是为了不让别人认错。”
-    
-![HitboardAir 按键](./images/实拍HitboardLOGO.JPG)
+
     
 ** 02_定位板
 
