@@ -1,1 +1,1 @@
-![设计你的 Hitboard Air](./FindYourFight.png)
+![设计你的 Hitboard Air](./images/FindYourFight.png)
