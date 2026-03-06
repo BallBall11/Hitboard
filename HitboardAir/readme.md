@@ -1,3 +1,5 @@
-![设计你的 Hitboard Air](./images/FindYourFight03.png)
+![设计你的 Hitboard Air](./images/刚柔.JPG)
 
-![设计你的 Hitboard Air](./images/FindYourFight04.png)
+![设计你的 Hitboard Air](./images/边缘对比.JPG)
+
+![设计你的 Hitboard Air](./images/Dock.JPG)
