@@ -50,7 +50,7 @@
             letter-spacing: -0.02em;
             align-self: flex-start;
             padding-left: 8px;
-            margin-left: 35px; /* 从30px增加至35px */
+            margin-left: 35px;
             transition: color 0.2s, border-color 0.2s;
         }
         .editable-name {
@@ -1443,7 +1443,7 @@
         link.click();
     }
 
-    // 导出产品配置 (新版排版，物料清单Y轴偏移调整，横线颜色动态)
+    // 导出产品配置 (新版排版，物料清单Y轴偏移调整，横线颜色动态，标题包含加键信息)
     function exportProductConfig() {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = 2970;
@@ -1452,11 +1452,17 @@
         eCtx.fillStyle = '#ffffff';
         eCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
+        // 根据加键数量生成括号内容
+        let keySuffix = '';
+        if (extraKeyMode === '0') keySuffix = '（不加键）';
+        else if (extraKeyMode === '1') keySuffix = '（加 1 键）';
+        else keySuffix = '（加 2 键）';
+
         // 标题
         eCtx.font = 'bold 36px "Microsoft YaHei", sans-serif';
         eCtx.fillStyle = '#1e2b3c';
         eCtx.textAlign = 'center';
-        const titleText = userName ? `${userName} 的 Hitboard Air` : '你的 Hitboard Air';
+        const titleText = userName ? `${userName} 的 Hitboard Air${keySuffix}` : `你的 Hitboard Air${keySuffix}`;
         eCtx.fillText(titleText, exportCanvas.width / 2, 60);
 
         // 计算产品图缩放比例，使宽度留出左右边距
