@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>设计你的 Hitboard Air～</title>
+    <!-- 引入 Color Thief 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
     <style>
         /* 基础样式 (保持不变) */
         * {
@@ -227,6 +229,7 @@
             gap: 10px;
             justify-content: center;
             margin-bottom: 12px;
+            flex-wrap: wrap;
         }
         .action-btn {
             border: none;
@@ -253,6 +256,25 @@
             margin-top: 14px;
             font-size: 0.8rem;
             transition: color 0.2s;
+        }
+        /* 调色板样式 - 移除选中高亮相关 */
+        .palette-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.1s;
+        }
+        .color-swatch:hover {
+            transform: scale(1.1);
         }
         .slider-container {
             margin-top: 16px;
@@ -660,6 +682,13 @@
                     <button class="action-btn" id="uploadWallpaperBtn">📁 选择图片</button>
                     <button class="action-btn small" id="clearWallpaperBtn">🗑️ 清除</button>
                 </div>
+                <!-- 从壁纸取色复选框 -->
+                <div class="checkbox-row" style="margin-top: 8px; justify-content: center;">
+                    <input type="checkbox" id="autoColorCheckbox">
+                    <label for="autoColorCheckbox">从壁纸取色</label>
+                </div>
+                <!-- 调色板容器（初始隐藏） -->
+                <div id="paletteContainer" class="palette-container" style="display: none;"></div>
                 <input type="file" id="wallpaperFile" accept="image/*" class="file-input">
                 <div class="wallpaper-status" id="wallpaperStatus">未设置壁纸</div>
                 <div class="slider-container">
@@ -767,7 +796,7 @@
         5: 5.4 / 2 * SCALE      // 27px
     };
 
-    // 按键坐标 (根据用户最新数据)
+    // 按键坐标
     const buttons = [
         { cx: 466, cy: 153, r: buttonRadii[23] }, // Left
         { cx: 718, cy: 156, r: buttonRadii[23] }, // Down
@@ -806,7 +835,7 @@
     let dockEnabled = false;
     let dockFollowCase = true; // 默认跟随外壳
 
-    // 加键数量模式: '0' 不加键, '1' 加1个键, '2' 加2个键（默认）
+    // 加键数量模式
     let extraKeyMode = '2';
 
     // 透明度
@@ -852,6 +881,8 @@
     const fileInput = document.getElementById('wallpaperFile');
     const uploadBtn = document.getElementById('uploadWallpaperBtn');
     const clearWallpaperBtn = document.getElementById('clearWallpaperBtn');
+    const autoColorCheckbox = document.getElementById('autoColorCheckbox');
+    const paletteContainer = document.getElementById('paletteContainer');
     const exportWallpaperBtn = document.getElementById('exportWallpaperBtn');
     const exportProductBtn = document.getElementById('exportProductBtn');
     const editableNameSpan = document.getElementById('editableName');
@@ -882,11 +913,16 @@
     let isPinkTheme = false;
     let userCustomized = false;
 
+    // 初始化 Color Thief
+    const colorThief = new ColorThief();
+
+    // 存储提取的颜色数组（每个是[r,g,b]）
+    let paletteColors = [];
+
     // 显示/隐藏 Dock 设置
     function toggleDockSettings() {
         if (dockCheck.checked) {
             dockSettings.classList.add('visible');
-            // 如果 Dock 启用且默认跟随，同步颜色
             if (dockFollowCheck.checked) {
                 dockColor = caseColor;
                 dockInput.value = caseColor;
@@ -896,7 +932,7 @@
         }
     }
     dockCheck.addEventListener('change', toggleDockSettings);
-    toggleDockSettings(); // 初始化
+    toggleDockSettings();
 
     // 调整画布尺寸以适应 Dock
     function updateCanvasSize() {
@@ -1144,12 +1180,11 @@
         // 绘制按键（根据加键数量过滤）
         ctx.save();
         buttons.forEach((btn, idx) => {
-            // 根据 extraKeyMode 决定是否绘制 Add1 (索引6) 和 Add2 (索引3)
             if (idx === 3) { // Add2
-                if (extraKeyMode === '0' || extraKeyMode === '1') return; // 不加键或加1键时隐藏 Add2
+                if (extraKeyMode === '0' || extraKeyMode === '1') return;
             }
             if (idx === 6) { // Add1
-                if (extraKeyMode === '0') return; // 不加键时隐藏 Add1
+                if (extraKeyMode === '0') return;
             }
             ctx.beginPath();
             ctx.arc(btn.cx, btn.cy, btn.r, 0, 2 * Math.PI);
@@ -1273,6 +1308,73 @@
         draw();
     });
 
+    // 提取调色板并更新UI（无选中高亮）
+    function updatePalette() {
+        if (!wallpaperImage) {
+            paletteContainer.style.display = 'none';
+            return;
+        }
+        try {
+            paletteColors = colorThief.getPalette(wallpaperImage, 4);
+            paletteContainer.innerHTML = ''; // 清空
+            paletteColors.forEach((color, index) => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                swatch.dataset.index = index;
+                swatch.addEventListener('click', () => {
+                    // 直接应用该颜色，不高亮任何色块
+                    const hex = `#${((1 << 24) + (color[0] << 16) + (color[1] << 8) + color[2]).toString(16).slice(1)}`;
+                    applyColor(hex);
+                });
+                paletteContainer.appendChild(swatch);
+            });
+            paletteContainer.style.display = 'flex';
+        } catch (err) {
+            console.error('提取调色板失败', err);
+            paletteContainer.style.display = 'none';
+        }
+    }
+
+    // 应用颜色到外壳，并强制打开跟随选项，同时标记用户自定义
+    function applyColor(hex) {
+        userCustomized = true; // 标记为已自定义，防止主题切换覆盖
+        caseInput.value = hex;
+        caseColor = hex;
+        if (!unifyCheckbox.checked) {
+            unifyCheckbox.checked = true;
+            applyUnify(true);
+        } else {
+            panelColor = hex;
+            buttonColor = hex;
+            panelInput.value = hex;
+            buttonInput.value = hex;
+        }
+        if (dockEnabled && !dockFollowCheck.checked) {
+            dockFollowCheck.checked = true;
+            dockColor = hex;
+            dockInput.value = hex;
+        } else if (dockEnabled && dockFollowCheck.checked) {
+            dockColor = hex;
+            dockInput.value = hex;
+        }
+        draw();
+    }
+
+    // 从壁纸取色并应用（自动选择第一个颜色）
+    function applyWallpaperColor() {
+        if (!wallpaperImage) return;
+        try {
+            const [r, g, b] = colorThief.getColor(wallpaperImage);
+            const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+            applyColor(hex);
+            // 注意：这里不修改调色板选中状态，调色板无高亮
+        } catch (err) {
+            console.error('取色失败', err);
+            alert('取色失败，请重试或选择其他图片。');
+        }
+    }
+
     // 上传壁纸
     uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => {
@@ -1291,7 +1393,14 @@
                 scaleSlider.value = scale.toFixed(2);
                 scaleSpan.innerText = scale.toFixed(2) + 'x';
                 wallpaperStatus.innerText = `已加载: ${file.name.slice(0,15)}...`;
-                draw();
+                // 提取调色板并显示（无高亮）
+                updatePalette();
+                // 如果自动取色复选框已勾选，则自动取色
+                if (autoColorCheckbox.checked) {
+                    applyWallpaperColor();
+                } else {
+                    draw();
+                }
             };
             img.src = event.target.result;
         };
@@ -1304,7 +1413,22 @@
         wallpaperDimmed = false;
         panelColorActive = false;
         wallpaperStatus.innerText = '未设置壁纸';
+        paletteContainer.style.display = 'none';
         draw();
+    });
+
+    // 自动取色复选框变化
+    autoColorCheckbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            if (!wallpaperImage) {
+                // 无壁纸时触发文件选择
+                uploadBtn.click();
+                // 注意：此时复选框保持勾选，上传后会检测并自动取色
+            } else {
+                applyWallpaperColor();
+            }
+        }
+        // 取消勾选时不改变颜色
     });
 
     // 缩放滑块
@@ -1372,7 +1496,7 @@
         canvas.style.cursor = 'grab';
     });
 
-    // 导出壁纸 (保持不变)
+    // 导出壁纸
     function exportWallpaper() {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = 2970;
@@ -1443,7 +1567,7 @@
         link.click();
     }
 
-    // 导出产品配置 (新版排版，物料清单Y轴偏移调整，横线颜色动态，标题包含加键信息)
+    // 导出产品配置 (包含加键信息)
     function exportProductConfig() {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = 2970;
@@ -1458,41 +1582,32 @@
         else if (extraKeyMode === '1') keySuffix = '（加 1 键）';
         else keySuffix = '（加 2 键）';
 
-        // 标题
+        const titleText = userName ? `${userName} 的 Hitboard Air${keySuffix}` : `你的 Hitboard Air${keySuffix}`;
         eCtx.font = 'bold 36px "Microsoft YaHei", sans-serif';
         eCtx.fillStyle = '#1e2b3c';
         eCtx.textAlign = 'center';
-        const titleText = userName ? `${userName} 的 Hitboard Air${keySuffix}` : `你的 Hitboard Air${keySuffix}`;
         eCtx.fillText(titleText, exportCanvas.width / 2, 60);
 
-        // 计算产品图缩放比例，使宽度留出左右边距
         const margin = 200;
         const maxWidth = exportCanvas.width - margin * 2;
         const scale = maxWidth / canvas.width;
         const prodWidth = canvas.width * scale;
         const prodHeight = canvas.height * scale;
 
-        // 产品图左上角坐标
         const prodX = margin;
-        const prodY = 60 + 40; // 标题下40px
+        const prodY = 60 + 40;
 
-        // 绘制产品图
         eCtx.drawImage(canvas, prodX, prodY, prodWidth, prodHeight);
 
-        // 计算物料清单Y轴偏移量：当启用Dock时，向上移动 (dockH - outerH) * scale
         let deltaY = 0;
         if (dockEnabled) {
             deltaY = (dockH - outerH) * scale;
         }
 
-        // 物料清单起始Y坐标：产品图底部 + 60px 间距 - deltaY
         const listStartY = prodY + prodHeight + 60 - deltaY;
-
-        // 物料清单区域
         const startX = margin + 30;
         let startY = listStartY;
 
-        // 基础物料
         const baseItems = [
             { category: '必选', name: 'Hitboard Air 3D打印套件', qty: '1套', cost: 30, supplier: '自选' },
             { category: '必选', name: '树莓派 Pico（无焊接针脚）', qty: '1个', cost: 16, supplier: 'LOBOROBOT' },
@@ -1505,7 +1620,6 @@
             { category: '必选', name: '凯华1350矮轴座', qty: '20个', cost: 9, supplier: 'YMDK' }
         ];
 
-        // 选配物料
         let optionalItems = [];
 
         if (wallpaperImage) {
@@ -1538,7 +1652,6 @@
         const headerFontSize = 27;
         const rowFontSize = 24;
 
-        // 设置文字透明度 80%
         eCtx.save();
         eCtx.globalAlpha = 0.8;
 
@@ -1561,7 +1674,6 @@
         eCtx.fillText('厂家/店铺', x, startY);
         startY += headerFontSize + 10;
 
-        // 横线颜色：未启用 Dock 时使用灰色 (#ccc)，启用时使用 dockColor
         const lineColor = dockEnabled ? dockColor : '#ccc';
         eCtx.strokeStyle = lineColor;
         eCtx.lineWidth = 2;
