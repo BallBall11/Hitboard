@@ -257,7 +257,7 @@
             font-size: 0.8rem;
             transition: color 0.2s;
         }
-        /* 调色板样式 - 移除选中高亮相关 */
+        /* 调色板样式 */
         .palette-container {
             display: flex;
             justify-content: center;
@@ -707,7 +707,7 @@
             </div>
         </div>
 
-        <!-- 盖板加键数量选择 -->
+        <!-- 盖板：选择加键数量 -->
         <div class="option-group">
             <h3>盖板：选择加键数量</h3>
             <div class="radio-group">
@@ -726,6 +726,25 @@
             </div>
         </div>
 
+        <!-- 方向键布局选择 -->
+        <div class="option-group">
+            <h3>方向键：选择方向键布局</h3>
+            <div class="radio-group">
+                <div class="radio-row">
+                    <input type="radio" name="directionLayout" id="dirHigh" value="high" checked>
+                    <label for="dirHigh">高方向键（3键）</label>
+                </div>
+                <div class="radio-row">
+                    <input type="radio" name="directionLayout" id="dirLow" value="low">
+                    <label for="dirLow">低方向键（3键）</label>
+                </div>
+                <div class="radio-row">
+                    <input type="radio" name="directionLayout" id="dirWasd" value="wasd">
+                    <label for="dirWasd">WASD 布局（4键）</label>
+                </div>
+            </div>
+        </div>
+
         <div class="option-group">
             <h3>其他配置</h3>
             <div class="feature-checkbox">
@@ -740,6 +759,11 @@
             <div class="feature-checkbox">
                 <input type="checkbox" id="dockCheck">
                 <label for="dockCheck">加装 Dock（5mm 超轻薄）</label>
+            </div>
+            <!-- 新增：加装磁吸盖板 -->
+            <div class="feature-checkbox">
+                <input type="checkbox" id="magneticCoverCheck">
+                <label for="magneticCoverCheck">加装磁吸盖板</label>
             </div>
             <!-- Dock 设置区域（默认隐藏） -->
             <div id="dockSettings" class="dock-settings">
@@ -796,29 +820,45 @@
         5: 5.4 / 2 * SCALE      // 27px
     };
 
-    // 按键坐标
-    const buttons = [
-        { cx: 466, cy: 153, r: buttonRadii[23] }, // Left
-        { cx: 718, cy: 156, r: buttonRadii[23] }, // Down
-        { cx: 967, cy: 215, r: buttonRadii[23] }, // Right
-        { cx: 1456, cy: 407, r: buttonRadii[23] }, // Add2
-        { cx: 1634, cy: 215, r: buttonRadii[23] }, // X
-        { cx: 1696, cy: 481, r: buttonRadii[23] }, // A
-        { cx: 1709, cy: 752, r: buttonRadii[23] }, // Add1
-        { cx: 1882, cy: 156, r: buttonRadii[23] }, // Y
-        { cx: 1940, cy: 423, r: buttonRadii[23] }, // B
-        { cx: 2134, cy: 154, r: buttonRadii[23] }, // RB
-        { cx: 2192, cy: 418, r: buttonRadii[23] }, // RT
-        { cx: 2394, cy: 188, r: buttonRadii[23] }, // LB
-        { cx: 2443, cy: 455, r: buttonRadii[23] }, // LT
-        { cx: 1151, cy: 833, r: buttonRadii[26] }, // L
-        { cx: 1449, cy: 833, r: buttonRadii[26] }, // R
-        { cx: 140, cy: 80, r: buttonRadii[5] },    // Start
-        { cx: 250, cy: 80, r: buttonRadii[5] }     // Select
+    // 基础按键坐标
+    const baseButtons = [
+        { cx: 466, cy: 153, r: buttonRadii[23] }, // 0 Left
+        { cx: 718, cy: 156, r: buttonRadii[23] }, // 1 Down
+        { cx: 967, cy: 215, r: buttonRadii[23] }, // 2 Right
+        { cx: 1456, cy: 407, r: buttonRadii[23] }, // 3 Add2
+        { cx: 1634, cy: 215, r: buttonRadii[23] }, // 4 X
+        { cx: 1696, cy: 481, r: buttonRadii[23] }, // 5 A
+        { cx: 1709, cy: 752, r: buttonRadii[23] }, // 6 Add1
+        { cx: 1882, cy: 156, r: buttonRadii[23] }, // 7 Y
+        { cx: 1940, cy: 423, r: buttonRadii[23] }, // 8 B
+        { cx: 2134, cy: 154, r: buttonRadii[23] }, // 9 RB
+        { cx: 2192, cy: 418, r: buttonRadii[23] }, // 10 RT
+        { cx: 2394, cy: 188, r: buttonRadii[23] }, // 11 LB
+        { cx: 2443, cy: 455, r: buttonRadii[23] }, // 12 LT
+        { cx: 1151, cy: 833, r: buttonRadii[26] }, // 13 L
+        { cx: 1449, cy: 833, r: buttonRadii[26] }, // 14 R
+        { cx: 140, cy: 80, r: buttonRadii[5] },    // 15 Start
+        { cx: 250, cy: 80, r: buttonRadii[5] }     // 16 Select
     ];
 
-    const DIRECTION_INDICES = [0, 1, 2];
-    const MICRO_INDICES = [15, 16];
+    // 计算镜像按键（以中心垂线 x=1300 镜像）
+    const centerX = outerW / 2; // 1300
+    function mirrorX(x) { return 2 * centerX - x; }
+
+    // 新增镜像按键
+    const smallHandLeft = { cx: mirrorX(1696), cy: 481, r: buttonRadii[23] }; // 镜像 A
+    const smallHandDown = { cx: mirrorX(1940), cy: 423, r: buttonRadii[23] }; // 镜像 B
+    const smallHandRight = { cx: mirrorX(2192), cy: 418, r: buttonRadii[23] }; // 镜像 RT
+
+    // 最终按键数组，添加镜像按键
+    const buttons = [
+        ...baseButtons,
+        smallHandLeft,  // 索引 17
+        smallHandDown,  // 索引 18
+        smallHandRight  // 索引 19
+    ];
+
+    const MICRO_INDICES = [15, 16]; // Start, Select
 
     const canvas = document.getElementById('productCanvas');
     const ctx = canvas.getContext('2d');
@@ -834,9 +874,13 @@
     let microEnabled = false;
     let dockEnabled = false;
     let dockFollowCase = true; // 默认跟随外壳
+    let magneticCoverEnabled = false; // 新增磁吸盖板
 
-    // 加键数量模式
+    // 加键数量模式: '0' 不加键, '1' 加1个键, '2' 加2个键（默认）
     let extraKeyMode = '2';
+
+    // 方向键布局: 'high', 'low', 'wasd'，默认高方向键
+    let directionLayout = 'high';
 
     // 透明度
     const alphaCase = 0.9;
@@ -873,6 +917,7 @@
     const magneticCheck = document.getElementById('magneticCheck');
     const microCheck = document.getElementById('microCheck');
     const dockCheck = document.getElementById('dockCheck');
+    const magneticCoverCheck = document.getElementById('magneticCoverCheck');
     const dockFollowCheck = document.getElementById('dockFollowCase');
     const dockSettings = document.getElementById('dockSettings');
     const scaleSlider = document.getElementById('scaleSlider');
@@ -894,6 +939,11 @@
     const keys0 = document.getElementById('keys0');
     const keys1 = document.getElementById('keys1');
     const keys2 = document.getElementById('keys2');
+
+    // 方向键布局单选按钮
+    const dirHigh = document.getElementById('dirHigh');
+    const dirLow = document.getElementById('dirLow');
+    const dirWasd = document.getElementById('dirWasd');
 
     // 主题预设颜色
     const themeColors = {
@@ -1014,11 +1064,13 @@
         magneticEnabled = magneticCheck.checked;
         microEnabled = microCheck.checked;
         dockEnabled = dockCheck.checked;
+        magneticCoverEnabled = magneticCoverCheck.checked;
         updateCanvasSize();
     }
     magneticCheck.addEventListener('change', updateFeatures);
     microCheck.addEventListener('change', updateFeatures);
     dockCheck.addEventListener('change', updateFeatures);
+    magneticCoverCheck.addEventListener('change', updateFeatures);
 
     // 监听加键数量
     function updateExtraKeyMode() {
@@ -1030,6 +1082,17 @@
     keys0.addEventListener('change', updateExtraKeyMode);
     keys1.addEventListener('change', updateExtraKeyMode);
     keys2.addEventListener('change', updateExtraKeyMode);
+
+    // 监听方向键布局
+    function updateDirectionLayout() {
+        if (dirHigh.checked) directionLayout = 'high';
+        else if (dirLow.checked) directionLayout = 'low';
+        else if (dirWasd.checked) directionLayout = 'wasd';
+        draw();
+    }
+    dirHigh.addEventListener('change', updateDirectionLayout);
+    dirLow.addEventListener('change', updateDirectionLayout);
+    dirWasd.addEventListener('change', updateDirectionLayout);
 
     // Dock 跟随外壳
     function applyDockFollow() {
@@ -1177,15 +1240,30 @@
             drawLogoText(ctx, panelColor);
         }
 
-        // 绘制按键（根据加键数量过滤）
+        // 绘制按键（根据加键数量和方向键布局过滤）
         ctx.save();
         buttons.forEach((btn, idx) => {
+            // 先处理加键数量隐藏
             if (idx === 3) { // Add2
                 if (extraKeyMode === '0' || extraKeyMode === '1') return;
             }
             if (idx === 6) { // Add1
                 if (extraKeyMode === '0') return;
             }
+            // 再处理方向键布局隐藏
+            if (directionLayout === 'low') {
+                // 低方向键：隐藏原始 Left(0), Down(1), Right(2)，显示镜像 (17,18,19)
+                if (idx === 0 || idx === 1 || idx === 2) return;
+                // 镜像按键总是显示（不受加键数量影响）
+            } else if (directionLayout === 'wasd') {
+                // WASD：隐藏原始 Left(0), Right(2)，保留 Down(1) 作为 W
+                if (idx === 0 || idx === 2) return;
+                // 镜像按键显示 (17,18,19)
+            } else { // high
+                // 高方向键：只显示原始方向键，不显示镜像（镜像始终不显示）
+                if (idx >= 17) return; // 镜像按键在高方向键下隐藏
+            }
+            // 其他所有按键（包括原始 A/B/RT 等）始终绘制，除非被加键隐藏
             ctx.beginPath();
             ctx.arc(btn.cx, btn.cy, btn.r, 0, 2 * Math.PI);
             ctx.fillStyle = `rgba(${parseInt(buttonColor.slice(1,3),16)},${parseInt(buttonColor.slice(3,5),16)},${parseInt(buttonColor.slice(5,7),16)},${alphaButton})`;
@@ -1208,8 +1286,18 @@
         ctx.fillStyle = 'rgba(255,255,255,0.3)';
 
         if (magneticEnabled) {
-            DIRECTION_INDICES.forEach(idx => {
-                ctx.fillText('磁', buttons[idx].cx, buttons[idx].cy);
+            // 根据布局决定哪些按键标记为磁轴（方向键）
+            let magneticIndices = [];
+            if (directionLayout === 'high') {
+                magneticIndices = [0, 1, 2];
+            } else if (directionLayout === 'low') {
+                magneticIndices = [17, 18, 19];
+            } else if (directionLayout === 'wasd') {
+                magneticIndices = [1, 17, 18, 19]; // Down 和三个镜像
+            }
+            magneticIndices.forEach(idx => {
+                const btn = buttons[idx];
+                ctx.fillText('磁', btn.cx, btn.cy);
             });
         }
         if (microEnabled) {
@@ -1368,7 +1456,6 @@
             const [r, g, b] = colorThief.getColor(wallpaperImage);
             const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
             applyColor(hex);
-            // 注意：这里不修改调色板选中状态，调色板无高亮
         } catch (err) {
             console.error('取色失败', err);
             alert('取色失败，请重试或选择其他图片。');
@@ -1567,7 +1654,7 @@
         link.click();
     }
 
-    // 导出产品配置 (包含加键信息)
+    // 导出产品配置 (包含加键信息和方向键布局)
     function exportProductConfig() {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = 2970;
@@ -1576,13 +1663,19 @@
         eCtx.fillStyle = '#ffffff';
         eCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-        // 根据加键数量生成括号内容
-        let keySuffix = '';
-        if (extraKeyMode === '0') keySuffix = '（不加键）';
-        else if (extraKeyMode === '1') keySuffix = '（加 1 键）';
-        else keySuffix = '（加 2 键）';
+        // 方向键布局名称
+        let layoutName = '';
+        if (directionLayout === 'high') layoutName = '高方向键';
+        else if (directionLayout === 'low') layoutName = '低方向键';
+        else if (directionLayout === 'wasd') layoutName = 'WASD 布局';
 
-        const titleText = userName ? `${userName} 的 Hitboard Air${keySuffix}` : `你的 Hitboard Air${keySuffix}`;
+        // 加键数量名称
+        let keyName = '';
+        if (extraKeyMode === '0') keyName = '不加键';
+        else if (extraKeyMode === '1') keyName = '加 1 键';
+        else keyName = '加 2 键';
+
+        const titleText = userName ? `${userName} 的 Hitboard Air（${layoutName}、${keyName}）` : `你的 Hitboard Air（${layoutName}、${keyName}）`;
         eCtx.font = 'bold 36px "Microsoft YaHei", sans-serif';
         eCtx.fillStyle = '#1e2b3c';
         eCtx.textAlign = 'center';
@@ -1644,6 +1737,11 @@
             optionalItems.push(
                 { category: '选配Dock', name: 'Dock 3D打印套件', qty: '1套', cost: 20, supplier: '自选' },
                 { category: '选配Dock', name: '磁铁（直径 6x 高度2mm）', qty: '18颗', cost: 6, supplier: '磁悦旗舰店' }
+            );
+        }
+        if (magneticCoverCheck.checked) {
+            optionalItems.push(
+                { category: '选配磁吸盖板', name: '方形磁铁（F10x5x1mm）', qty: '24颗', cost: 3, supplier: '磁工旗舰店' }
             );
         }
 
