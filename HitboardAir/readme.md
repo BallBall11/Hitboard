@@ -45,6 +45,10 @@
 ![HitboardAir 全部打印件](./images/Pico背面.png)
 
 1. 拿出「Hitboard Air 03 线路板」，板子上布满卡扣，依次将 Pico、轴座卡在对应的位置。
+
+**注意！一定要是正面（有 USB 凸起）朝里，背面（绿色纯平面）朝向自己卡进去。
+
+![HitboardAir 全部打印件](./images/卡位接线.png)
     
 2. 连接
     
