@@ -760,7 +760,7 @@
                 <input type="checkbox" id="dockCheck">
                 <label for="dockCheck">加装 Dock（5mm 超轻薄）</label>
             </div>
-            <!-- 新增：加装磁吸盖板 -->
+            <!-- 加装磁吸盖板 -->
             <div class="feature-checkbox">
                 <input type="checkbox" id="magneticCoverCheck">
                 <label for="magneticCoverCheck">加装磁吸盖板</label>
@@ -874,7 +874,7 @@
     let microEnabled = false;
     let dockEnabled = false;
     let dockFollowCase = true; // 默认跟随外壳
-    let magneticCoverEnabled = false; // 新增磁吸盖板
+    let magneticCoverEnabled = false; // 磁吸盖板
 
     // 加键数量模式: '0' 不加键, '1' 加1个键, '2' 加2个键（默认）
     let extraKeyMode = '2';
@@ -1254,14 +1254,14 @@
             if (directionLayout === 'low') {
                 // 低方向键：隐藏原始 Left(0), Down(1), Right(2)，显示镜像 (17,18,19)
                 if (idx === 0 || idx === 1 || idx === 2) return;
-                // 镜像按键总是显示（不受加键数量影响）
+                // 镜像按键总是显示
             } else if (directionLayout === 'wasd') {
                 // WASD：隐藏原始 Left(0), Right(2)，保留 Down(1) 作为 W
                 if (idx === 0 || idx === 2) return;
                 // 镜像按键显示 (17,18,19)
             } else { // high
-                // 高方向键：只显示原始方向键，不显示镜像（镜像始终不显示）
-                if (idx >= 17) return; // 镜像按键在高方向键下隐藏
+                // 高方向键：只显示原始方向键，不显示镜像
+                if (idx >= 17) return;
             }
             // 其他所有按键（包括原始 A/B/RT 等）始终绘制，除非被加键隐藏
             ctx.beginPath();
@@ -1293,7 +1293,8 @@
             } else if (directionLayout === 'low') {
                 magneticIndices = [17, 18, 19];
             } else if (directionLayout === 'wasd') {
-                magneticIndices = [1, 17, 18, 19]; // Down 和三个镜像
+                // WASD 布局下，只有三个镜像按键有磁轴，W键（索引1）没有磁轴
+                magneticIndices = [17, 18, 19];
             }
             magneticIndices.forEach(idx => {
                 const btn = buttons[idx];
