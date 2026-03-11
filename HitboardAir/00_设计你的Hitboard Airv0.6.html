@@ -750,24 +750,7 @@
             </div>
         </div>
 
-        <!-- 方向键布局选择 -->
-        <div class="option-group">
-            <h3>方向键：选择方向键布局</h3>
-            <div class="radio-group">
-                <div class="radio-row">
-                    <input type="radio" name="directionLayout" id="dirHigh" value="high" checked>
-                    <label for="dirHigh">高方向键（3键）</label>
-                </div>
-                <div class="radio-row">
-                    <input type="radio" name="directionLayout" id="dirLow" value="low">
-                    <label for="dirLow">低方向键（3键）</label>
-                </div>
-                <div class="radio-row">
-                    <input type="radio" name="directionLayout" id="dirWasd" value="wasd">
-                    <label for="dirWasd">WASD 布局（4键）</label>
-                </div>
-            </div>
-        </div>
+        <!-- 方向键布局选择已移除，系统固定为高方向键 -->
 
         <div class="option-group">
             <h3>其他配置</h3>
@@ -925,8 +908,8 @@
     // 加键数量模式: '0' 不加键, '1' 加1个键, '2' 加2个键（默认）
     let extraKeyMode = '2';
 
-    // 方向键布局: 'high', 'low', 'wasd'，默认高方向键
-    let directionLayout = 'high';
+    // 方向键布局固定为高方向键
+    const directionLayout = 'high';
 
     // 定位线模式: 'none', 'circle', 'square'
     let guideLineMode = 'none';
@@ -977,7 +960,7 @@
     const clearWallpaperBtn = document.getElementById('clearWallpaperBtn');
     const autoColorCheckbox = document.getElementById('autoColorCheckbox');
     const paletteContainer = document.getElementById('paletteContainer');
-    const guideLineContainer = document.getElementById('guideLineContainer'); // 新增
+    const guideLineContainer = document.getElementById('guideLineContainer');
     const exportWallpaperBtn = document.getElementById('exportWallpaperBtn');
     const exportProductBtn = document.getElementById('exportProductBtn');
     const editableNameSpan = document.getElementById('editableName');
@@ -989,11 +972,6 @@
     const keys0 = document.getElementById('keys0');
     const keys1 = document.getElementById('keys1');
     const keys2 = document.getElementById('keys2');
-
-    // 方向键布局单选按钮
-    const dirHigh = document.getElementById('dirHigh');
-    const dirLow = document.getElementById('dirLow');
-    const dirWasd = document.getElementById('dirWasd');
 
     // 定位线单选按钮
     const guideNone = document.getElementById('guideNone');
@@ -1137,17 +1115,6 @@
     keys0.addEventListener('change', updateExtraKeyMode);
     keys1.addEventListener('change', updateExtraKeyMode);
     keys2.addEventListener('change', updateExtraKeyMode);
-
-    // 监听方向键布局
-    function updateDirectionLayout() {
-        if (dirHigh.checked) directionLayout = 'high';
-        else if (dirLow.checked) directionLayout = 'low';
-        else if (dirWasd.checked) directionLayout = 'wasd';
-        draw();
-    }
-    dirHigh.addEventListener('change', updateDirectionLayout);
-    dirLow.addEventListener('change', updateDirectionLayout);
-    dirWasd.addEventListener('change', updateDirectionLayout);
 
     // 监听定位线模式
     function updateGuideLineMode() {
@@ -1305,7 +1272,7 @@
             drawLogoText(ctx, panelColor);
         }
 
-        // 绘制按键（根据加键数量和方向键布局过滤）
+        // 绘制按键（根据加键数量过滤，方向键固定为高方向键）
         ctx.save();
         buttons.forEach((btn, idx) => {
             // 先处理加键数量隐藏
@@ -1315,19 +1282,9 @@
             if (idx === 6) { // Add1
                 if (extraKeyMode === '0') return;
             }
-            // 再处理方向键布局隐藏
-            if (directionLayout === 'low') {
-                // 低方向键：隐藏原始 Left(0), Down(1), Right(2)，显示镜像 (17,18,19)
-                if (idx === 0 || idx === 1 || idx === 2) return;
-                // 镜像按键总是显示
-            } else if (directionLayout === 'wasd') {
-                // WASD：隐藏原始 Left(0), Right(2)，保留 Down(1) 作为 W
-                if (idx === 0 || idx === 2) return;
-                // 镜像按键显示 (17,18,19)
-            } else { // high
-                // 高方向键：只显示原始方向键，不显示镜像
-                if (idx >= 17) return;
-            }
+            // 高方向键：只显示原始方向键 (0,1,2)，不显示镜像 (>=17)
+            if (idx >= 17) return;
+
             // 其他所有按键（包括原始 A/B/RT 等）始终绘制，除非被加键隐藏
             ctx.beginPath();
             ctx.arc(btn.cx, btn.cy, btn.r, 0, 2 * Math.PI);
@@ -1351,16 +1308,8 @@
         ctx.fillStyle = 'rgba(255,255,255,0.3)';
 
         if (magneticEnabled) {
-            // 根据布局决定哪些按键标记为磁轴（方向键）
-            let magneticIndices = [];
-            if (directionLayout === 'high') {
-                magneticIndices = [0, 1, 2];
-            } else if (directionLayout === 'low') {
-                magneticIndices = [17, 18, 19];
-            } else if (directionLayout === 'wasd') {
-                // WASD 布局下，只有三个镜像按键有磁轴，W键（索引1）没有磁轴
-                magneticIndices = [17, 18, 19];
-            }
+            // 高方向键：磁轴标记在 0,1,2 上
+            const magneticIndices = [0, 1, 2];
             magneticIndices.forEach(idx => {
                 const btn = buttons[idx];
                 ctx.fillText('磁', btn.cx, btn.cy);
@@ -1727,14 +1676,8 @@
                     if (idx === 6) { // Add1
                         if (extraKeyMode === '0') continue;
                     }
-                    // 再处理方向键布局隐藏
-                    if (directionLayout === 'low') {
-                        if (idx === 0 || idx === 1 || idx === 2) continue;
-                    } else if (directionLayout === 'wasd') {
-                        if (idx === 0 || idx === 2) continue;
-                    } else { // high
-                        if (idx >= 17) continue;
-                    }
+                    // 高方向键：只显示原始方向键，不显示镜像
+                    if (idx >= 17) continue;
 
                     // 获取该索引的物理坐标（相对于面板左下角）
                     let x_mm, y_mm;
@@ -1742,9 +1685,8 @@
                         x_mm = physCoords[idx].x;
                         y_mm = physCoords[idx].y;
                     } else {
-                        const srcIdx = idx === 17 ? 5 : (idx === 18 ? 8 : 10);
-                        x_mm = 260 - physCoords[srcIdx].x;
-                        y_mm = physCoords[srcIdx].y;
+                        // 镜像按键在高方向键下不显示，此处不会执行
+                        continue;
                     }
 
                     // 转换为以产品中心为原点的相对坐标
@@ -1816,7 +1758,7 @@
         link.click();
     }
 
-    // 导出产品配置 (物理比例1mm=10px，确保盖板尺寸与壁纸一致)
+    // 导出产品配置 (物理比例1mm=10px，确保盖板尺寸与壁纸一致，标题移除方向键布局)
     function exportProductConfig() {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = 2970;
@@ -1825,19 +1767,13 @@
         eCtx.fillStyle = '#ffffff';
         eCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-        // 方向键布局名称
-        let layoutName = '';
-        if (directionLayout === 'high') layoutName = '高方向键';
-        else if (directionLayout === 'low') layoutName = '低方向键';
-        else if (directionLayout === 'wasd') layoutName = 'WASD 布局';
-
         // 加键数量名称
         let keyName = '';
         if (extraKeyMode === '0') keyName = '不加键';
         else if (extraKeyMode === '1') keyName = '加 1 键';
         else keyName = '加 2 键';
 
-        const titleText = userName ? `${userName} 的 Hitboard Air（${layoutName}、${keyName}）` : `你的 Hitboard Air（${layoutName}、${keyName}）`;
+        const titleText = userName ? `${userName} 的 Hitboard Air（${keyName}）` : `你的 Hitboard Air（${keyName}）`;
         eCtx.font = 'bold 36px "Microsoft YaHei", sans-serif';
         eCtx.fillStyle = '#1e2b3c';
         eCtx.textAlign = 'center';
