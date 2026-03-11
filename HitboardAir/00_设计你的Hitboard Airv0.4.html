@@ -705,6 +705,25 @@
                     <span style="font-size:1.2rem;">↗</span>
                 </button>
             </div>
+
+            <!-- 定位线选项 -->
+            <div class="option-group" style="margin-top: 8px;">
+                <h3>定位线</h3>
+                <div class="radio-group">
+                    <div class="radio-row">
+                        <input type="radio" name="guideLine" id="guideNone" value="none" checked>
+                        <label for="guideNone">不开启定位线</label>
+                    </div>
+                    <div class="radio-row">
+                        <input type="radio" name="guideLine" id="guideCircle" value="circle">
+                        <label for="guideCircle">环形定位线（盖板孔尺寸）</label>
+                    </div>
+                    <div class="radio-row">
+                        <input type="radio" name="guideLine" id="guideSquare" value="square">
+                        <label for="guideSquare">14mm×14mm 方形定位线（轴座尺寸）</label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 盖板：选择加键数量 -->
@@ -747,6 +766,7 @@
 
         <div class="option-group">
             <h3>其他配置</h3>
+            <!-- 调整顺序：磁轴、微动、盖板加装螺丝、Dock -->
             <div class="feature-checkbox">
                 <input type="checkbox" id="magneticCheck">
                 <label for="magneticCheck">加装磁轴（3个方向键）</label>
@@ -755,20 +775,15 @@
                 <input type="checkbox" id="microCheck">
                 <label for="microCheck">加装微动按键（2个功能键）</label>
             </div>
-            <!-- Dock 复选框 -->
+            <!-- 盖板加装螺丝（原加固盖板） -->
+            <div class="feature-checkbox">
+                <input type="checkbox" id="reinforcedCoverCheck">
+                <label for="reinforcedCoverCheck">盖板加装螺丝</label>
+            </div>
+            <!-- Dock 复选框（最后） -->
             <div class="feature-checkbox">
                 <input type="checkbox" id="dockCheck">
                 <label for="dockCheck">加装 Dock（5mm 超轻薄）</label>
-            </div>
-            <!-- 加装磁吸盖板 -->
-            <div class="feature-checkbox">
-                <input type="checkbox" id="magneticCoverCheck">
-                <label for="magneticCoverCheck">为 3D 打印盖板加装磁吸</label>
-            </div>
-            <!-- 加装加固盖板 -->
-            <div class="feature-checkbox">
-                <input type="checkbox" id="reinforcedCoverCheck">
-                <label for="reinforcedCoverCheck">加装加固盖板</label>
             </div>
             <!-- Dock 设置区域（默认隐藏） -->
             <div id="dockSettings" class="dock-settings">
@@ -825,7 +840,28 @@
         5: 5.4 / 2 * SCALE      // 27px
     };
 
-    // 基础按键坐标
+    // 物理坐标（毫米，以面板左下角为原点）
+    const physCoords = [
+        { x: 46.62, y: 84.69 }, // 0 Left
+        { x: 71.82, y: 84.41 }, // 1 Down
+        { x: 96.65, y: 78.54 }, // 2 Right
+        { x: 145.63, y: 59.32 }, // 3 Add2
+        { x: 163.35, y: 78.54 }, // 4 X
+        { x: 169.6, y: 51.88 },  // 5 A
+        { x: 170.89, y: 24.81 }, // 6 Add1
+        { x: 188.18, y: 84.41 }, // 7 Y
+        { x: 193.95, y: 57.67 }, // 8 B
+        { x: 213.38, y: 84.59 }, // 9 RB
+        { x: 219.18, y: 58.23 }, // 10 RT
+        { x: 239.39, y: 81.2 },  // 11 LB
+        { x: 244.31, y: 54.55 }, // 12 LT
+        { x: 115.13, y: 16.74 }, // 13 L
+        { x: 144.87, y: 16.74 }, // 14 R
+        { x: 14, y: 92 },        // 15 Start
+        { x: 25, y: 92 }         // 16 Select
+    ];
+
+    // 基础按键坐标（网页像素，用于主画布）
     const baseButtons = [
         { cx: 466, cy: 153, r: buttonRadii[23] }, // 0 Left
         { cx: 718, cy: 156, r: buttonRadii[23] }, // 1 Down
@@ -850,7 +886,7 @@
     const centerX = outerW / 2; // 1300
     function mirrorX(x) { return 2 * centerX - x; }
 
-    // 新增镜像按键
+    // 新增镜像按键（网页像素）
     const smallHandLeft = { cx: mirrorX(1696), cy: 481, r: buttonRadii[23] }; // 镜像 A
     const smallHandDown = { cx: mirrorX(1940), cy: 423, r: buttonRadii[23] }; // 镜像 B
     const smallHandRight = { cx: mirrorX(2192), cy: 418, r: buttonRadii[23] }; // 镜像 RT
@@ -879,14 +915,16 @@
     let microEnabled = false;
     let dockEnabled = false;
     let dockFollowCase = true; // 默认跟随外壳
-    let magneticCoverEnabled = false; // 磁吸盖板
-    let reinforcedCoverEnabled = false; // 新增加固盖板
+    let reinforcedCoverEnabled = false; // 盖板加装螺丝
 
     // 加键数量模式: '0' 不加键, '1' 加1个键, '2' 加2个键（默认）
     let extraKeyMode = '2';
 
     // 方向键布局: 'high', 'low', 'wasd'，默认高方向键
     let directionLayout = 'high';
+
+    // 定位线模式: 'none', 'circle', 'square'
+    let guideLineMode = 'none';
 
     // 透明度
     const alphaCase = 0.9;
@@ -923,8 +961,7 @@
     const magneticCheck = document.getElementById('magneticCheck');
     const microCheck = document.getElementById('microCheck');
     const dockCheck = document.getElementById('dockCheck');
-    const magneticCoverCheck = document.getElementById('magneticCoverCheck');
-    const reinforcedCoverCheck = document.getElementById('reinforcedCoverCheck'); // 新增
+    const reinforcedCoverCheck = document.getElementById('reinforcedCoverCheck');
     const dockFollowCheck = document.getElementById('dockFollowCase');
     const dockSettings = document.getElementById('dockSettings');
     const scaleSlider = document.getElementById('scaleSlider');
@@ -951,6 +988,11 @@
     const dirHigh = document.getElementById('dirHigh');
     const dirLow = document.getElementById('dirLow');
     const dirWasd = document.getElementById('dirWasd');
+
+    // 定位线单选按钮
+    const guideNone = document.getElementById('guideNone');
+    const guideCircle = document.getElementById('guideCircle');
+    const guideSquare = document.getElementById('guideSquare');
 
     // 主题预设颜色
     const themeColors = {
@@ -1071,15 +1113,13 @@
         magneticEnabled = magneticCheck.checked;
         microEnabled = microCheck.checked;
         dockEnabled = dockCheck.checked;
-        magneticCoverEnabled = magneticCoverCheck.checked;
-        reinforcedCoverEnabled = reinforcedCoverCheck.checked; // 新增
+        reinforcedCoverEnabled = reinforcedCoverCheck.checked;
         updateCanvasSize();
     }
     magneticCheck.addEventListener('change', updateFeatures);
     microCheck.addEventListener('change', updateFeatures);
     dockCheck.addEventListener('change', updateFeatures);
-    magneticCoverCheck.addEventListener('change', updateFeatures);
-    reinforcedCoverCheck.addEventListener('change', updateFeatures); // 新增
+    reinforcedCoverCheck.addEventListener('change', updateFeatures);
 
     // 监听加键数量
     function updateExtraKeyMode() {
@@ -1102,6 +1142,17 @@
     dirHigh.addEventListener('change', updateDirectionLayout);
     dirLow.addEventListener('change', updateDirectionLayout);
     dirWasd.addEventListener('change', updateDirectionLayout);
+
+    // 监听定位线模式
+    function updateGuideLineMode() {
+        if (guideNone.checked) guideLineMode = 'none';
+        else if (guideCircle.checked) guideLineMode = 'circle';
+        else if (guideSquare.checked) guideLineMode = 'square';
+        // 不触发重绘，只在导出壁纸时使用
+    }
+    guideNone.addEventListener('change', updateGuideLineMode);
+    guideCircle.addEventListener('change', updateGuideLineMode);
+    guideSquare.addEventListener('change', updateGuideLineMode);
 
     // Dock 跟随外壳
     function applyDockFollow() {
@@ -1593,7 +1644,7 @@
         canvas.style.cursor = 'grab';
     });
 
-    // 导出壁纸 (纯壁纸，无按键标记)
+    // 导出壁纸 (A4横向 2970x2100) 根据定位线模式绘制，5mm按钮始终画圆，所有按钮加十字，线宽1px，十字半长10px
     function exportWallpaper() {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = 2970;
@@ -1606,6 +1657,10 @@
             { left: 20*10, bottom: 108*10 },
             { left: 20*10, bottom: 7.8*10 }
         ];
+
+        // 产品中心在物理坐标系中的坐标 (130, 50)
+        const productCenterX_mm = 130;
+        const productCenterY_mm = 50;
 
         positions.forEach(pos => {
             const leftPx = pos.left;
@@ -1640,7 +1695,90 @@
                 eCtx.drawImage(wallpaperImage, -wallpaperImage.naturalWidth/2, -wallpaperImage.naturalHeight/2, wallpaperImage.naturalWidth, wallpaperImage.naturalHeight);
                 eCtx.restore();
             }
-            eCtx.restore();
+            eCtx.restore(); // 恢复剪裁，准备绘制定位线
+
+            // 根据定位线模式绘制
+            if (guideLineMode !== 'none') {
+                // 计算盖板中心在画布上的像素坐标
+                const panelCenterX = leftPx + innerW/2;
+                const panelCenterY = topPx + innerH/2;
+
+                eCtx.save();
+                eCtx.strokeStyle = '#000000';
+                eCtx.lineWidth = 1; // 线宽1px
+
+                // 遍历所有可能的索引（0-19）
+                for (let idx = 0; idx < 20; idx++) {
+                    // 先处理加键数量隐藏
+                    if (idx === 3) { // Add2
+                        if (extraKeyMode === '0' || extraKeyMode === '1') continue;
+                    }
+                    if (idx === 6) { // Add1
+                        if (extraKeyMode === '0') continue;
+                    }
+                    // 再处理方向键布局隐藏
+                    if (directionLayout === 'low') {
+                        if (idx === 0 || idx === 1 || idx === 2) continue;
+                    } else if (directionLayout === 'wasd') {
+                        if (idx === 0 || idx === 2) continue;
+                    } else { // high
+                        if (idx >= 17) continue;
+                    }
+
+                    // 获取该索引的物理坐标（相对于面板左下角）
+                    let x_mm, y_mm;
+                    if (idx < 17) {
+                        x_mm = physCoords[idx].x;
+                        y_mm = physCoords[idx].y;
+                    } else {
+                        const srcIdx = idx === 17 ? 5 : (idx === 18 ? 8 : 10);
+                        x_mm = 260 - physCoords[srcIdx].x;
+                        y_mm = physCoords[srcIdx].y;
+                    }
+
+                    // 转换为以产品中心为原点的相对坐标
+                    const relX_mm = x_mm - productCenterX_mm;
+                    const relY_mm = y_mm - productCenterY_mm;
+
+                    // 计算在画布上的像素坐标（基于盖板中心）
+                    const x = panelCenterX + relX_mm * SCALE;
+                    const y = panelCenterY - relY_mm * SCALE;
+
+                    // 判断是否为5mm按钮（索引15、16）
+                    const is5mm = (idx === 15 || idx === 16);
+
+                    if (guideLineMode === 'circle' || is5mm) {
+                        // 环形定位线或5mm按钮：画圆
+                        let r_px;
+                        if (idx <= 12 || idx >= 17) { // 23mm (0-12 和 17-19)
+                            r_px = 24 / 2 * SCALE; // 120
+                        } else if (idx <= 14) { // 26mm (13-14)
+                            r_px = 27 / 2 * SCALE; // 135
+                        } else { // 5mm (15-16)
+                            r_px = 5.4 / 2 * SCALE; // 27
+                        }
+                        eCtx.beginPath();
+                        eCtx.arc(x, y, r_px, 0, 2 * Math.PI);
+                        eCtx.stroke();
+                    } else if (guideLineMode === 'square' && !is5mm) {
+                        // 方形定位线（非5mm按钮）：14x14mm
+                        const half = 7 * SCALE; // 70px
+                        eCtx.beginPath();
+                        eCtx.rect(x - half, y - half, half * 2, half * 2);
+                        eCtx.stroke();
+                    }
+
+                    // 无论哪种定位线，都添加2mm十字线（半长1mm = 10px）
+                    const crossHalf = 1 * SCALE; // 10px
+                    eCtx.beginPath();
+                    eCtx.moveTo(x - crossHalf, y);
+                    eCtx.lineTo(x + crossHalf, y);
+                    eCtx.moveTo(x, y - crossHalf);
+                    eCtx.lineTo(x, y + crossHalf);
+                    eCtx.stroke();
+                }
+                eCtx.restore();
+            }
 
             // 轮廓线
             eCtx.save();
@@ -1667,7 +1805,7 @@
         link.click();
     }
 
-    // 导出产品配置 (包含加键信息和方向键布局，物料清单全面更新，列宽保持原始，内容列右移100px)
+    // 导出产品配置 (物理比例1mm=10px，确保盖板尺寸与壁纸一致)
     function exportProductConfig() {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = 2970;
@@ -1695,22 +1833,29 @@
         eCtx.fillText(titleText, exportCanvas.width / 2, 60);
 
         const margin = 200;
-        const maxWidth = exportCanvas.width - margin * 2;
-        const scale = maxWidth / canvas.width;
-        const prodWidth = canvas.width * scale;
-        const prodHeight = canvas.height * scale;
 
+        // 产品图放置位置（外壳左上角固定）
         const prodX = margin;
-        const prodY = 60 + 40;
+        const prodY = 60 + 40; // 标题下40px
 
-        eCtx.drawImage(canvas, prodX, prodY, prodWidth, prodHeight);
-
-        let deltaY = 0;
         if (dockEnabled) {
-            deltaY = (dockH - outerH) * scale;
+            // 带Dock：画布上有Dock和Air，Air的外壳位于画布 (dockOffset, dockOffset)
+            // 我们要让外壳左上角出现在 (prodX, prodY)
+            // 所以整个画布的源点 (0,0) 应该绘制到 (prodX - dockOffset, prodY - dockOffset)
+            const dx = prodX - dockOffset;
+            const dy = prodY - dockOffset;
+            const dw = canvas.width;   // dockW
+            const dh = canvas.height;  // dockH
+            eCtx.drawImage(canvas, 0, 0, dw, dh, dx, dy, dw, dh);
+        } else {
+            // 不带Dock：画布就是外壳，直接绘制到目标位置
+            const dw = canvas.width;   // outerW
+            const dh = canvas.height;  // outerH
+            eCtx.drawImage(canvas, 0, 0, dw, dh, prodX, prodY, dw, dh);
         }
 
-        const listStartY = prodY + prodHeight + 60 - deltaY;
+        // 物料清单起始Y坐标：外壳底部 + 60px
+        const listStartY = prodY + outerH + 60;
         const startX = margin + 30;
         let startY = listStartY;
 
@@ -1724,32 +1869,32 @@
             { category: '必选', name: '凯华1350矮轴轴座', qty: '20个', cost: 9, supplier: 'YMDK' }
         ];
 
-        // 选配物料（先收集，再处理合并）
+        // 选配物料（先收集，再处理合并和价格调整）
         let optionalItems = [];
 
-        // 选配加固盖板
+        // 盖板加装螺丝（独立分类）
         if (reinforcedCoverCheck.checked) {
             optionalItems.push(
-                { category: '选配加固盖板', name: 'M2*8 螺丝（2mm 直径，8mm 长）', qty: '6颗', cost: 3, supplier: '固万基/以瑟' },
-                { category: '选配加固盖板', name: 'M2 螺帽', qty: '6颗', cost: 3, supplier: '固万基/以瑟' }
+                { category: '盖板加装螺丝', name: 'M2*8 螺丝（2mm 直径，8mm 长）', qty: '6颗', cost: 3, supplier: '固万基/以瑟' },
+                { category: '盖板加装螺丝', name: 'M2 螺帽（ 1.8mm 高）', qty: '6颗', cost: 3, supplier: '固万基/以瑟' }
             );
         }
 
         // 选配壁纸
         if (wallpaperImage) {
             optionalItems.push(
-                { category: '选配壁纸', name: '亚克力面板（3mm 厚）', qty: '1张', cost: 6, supplier: '德耀' },
+                { category: '选配壁纸', name: '亚克力面板（2mm 厚）', qty: '1张', cost: 6, supplier: '德耀' },
                 { category: '选配壁纸', name: 'A4 壁纸打印（建议选择磨砂质感）', qty: '1张', cost: 4, supplier: 'E彩冲印' },
                 { category: '选配壁纸', name: 'M2*8 螺丝（2mm 直径，8mm 长）', qty: '2颗', cost: 3, supplier: '固万基/以瑟' },
-                { category: '选配壁纸', name: 'M2*5 螺丝（2mm 直径，5mm 长）', qty: '4颗', cost: 0, supplier: '' },
-                { category: '选配壁纸', name: 'M2 螺帽', qty: '6颗', cost: 3, supplier: '固万基/以瑟' }
+                { category: '选配壁纸', name: 'M2*5 螺丝（2mm 直径，5mm 长）', qty: '4颗', cost: 3, supplier: '固万基/以瑟' },
+                { category: '选配壁纸', name: 'M2 螺帽（ 1.8mm 高）', qty: '6颗', cost: 3, supplier: '固万基/以瑟' }
             );
         }
 
         // 选配微动
         if (microCheck.checked) {
             optionalItems.push(
-                { category: '选配微动', name: '凯华静音微动_6*6*4.3', qty: '4个', cost: 3.83, supplier: '凯华' }
+                { category: '选配微动', name: '凯华黄点微动_6*6*4.3', qty: '2个', cost: 6, supplier: '高芯达电子/芯场外设' }
             );
         }
 
@@ -1765,34 +1910,39 @@
         if (dockCheck.checked) {
             optionalItems.push(
                 { category: '选配Dock', name: 'Dock 3D 打印套件', qty: '1套', cost: 20, supplier: '自选' },
-                { category: '选配Dock', name: '圆形强力磁铁（直径 6x 高度2mm）', qty: '18颗', cost: 6, supplier: '磁悦旗舰店' }
+                { category: '选配Dock', name: '圆形强力磁铁（直径 6x 高度2mm）', qty: '18颗', cost: 6, supplier: '磁悦旗舰店' },
+                { category: '选配Dock', name: 'M2*5 螺丝（2mm 直径，5mm 长）', qty: '2颗', cost: 3, supplier: '固万基/以瑟' },
+                { category: '选配Dock', name: 'M2 螺帽（ 1.8mm 高）', qty: '2颗', cost: 3, supplier: '固万基/以瑟' }
             );
         }
 
-        // 选配磁吸盖板
-        if (magneticCoverCheck.checked) {
-            optionalItems.push(
-                { category: '选配磁吸盖板', name: '方形磁铁（F10x5x1mm）', qty: '24颗', cost: 3, supplier: '磁工旗舰店' }
-            );
-        }
-
-        // 合并 M2 螺帽：如果存在多个条目名称为 'M2 螺帽' 且数量为 '6颗' 的，合并为一个，分类改为 '选配加固盖板/壁纸'
+        // 合并 M2 螺帽：如果存在多个条目名称为 'M2 螺帽（ 1.8mm 高）' 且数量为 '6颗' 的，合并为一个，分类改为 '盖板加装螺丝/选配壁纸'
         const nutIndices = [];
         optionalItems.forEach((item, index) => {
-            if (item.name === 'M2 螺帽' && item.qty === '6颗') {
+            if (item.name === 'M2 螺帽（ 1.8mm 高）' && item.qty === '6颗') {
                 nutIndices.push(index);
             }
         });
 
         if (nutIndices.length > 1) {
-            // 保留第一个，合并到第一个，其余删除
             const firstNut = optionalItems[nutIndices[0]];
-            firstNut.category = '选配加固盖板/壁纸'; // 合并分类
-            // 从后往前删除，避免索引变化
+            firstNut.category = '盖板加装螺丝/选配壁纸';
             for (let i = nutIndices.length - 1; i > 0; i--) {
                 optionalItems.splice(nutIndices[i], 1);
             }
         }
+
+        // 处理重复螺丝成本归零（相同名称和供应商的螺丝只第一次计费）
+        const screwMap = new Map(); // key = name|supplier
+        optionalItems.forEach(item => {
+            const key = `${item.name}|${item.supplier}`;
+            if (!screwMap.has(key)) {
+                screwMap.set(key, item.cost); // 记录第一次出现的成本
+            } else {
+                // 后续出现，成本设为0
+                item.cost = 0;
+            }
+        });
 
         const allItems = baseItems.concat(optionalItems);
         const titleFontSize = 36;
@@ -1808,12 +1958,10 @@
         startY += titleFontSize + 15;
 
         eCtx.font = `bold ${headerFontSize}px "Microsoft YaHei", sans-serif`;
-        // 列宽保持原始：分类180，内容550，数量100，成本140，厂家380
         const colWidths = [180, 550, 100, 140, 380];
         let x = startX;
         eCtx.fillText('分类', x, startY);
         x += colWidths[0];
-        // 内容列右移100像素
         eCtx.fillText('内容', x + 100, startY);
         x += colWidths[1];
         eCtx.fillText('数量', x, startY);
@@ -1837,7 +1985,7 @@
             let x = startX;
             eCtx.fillText(item.category, x, startY);
             x += colWidths[0];
-            eCtx.fillText(item.name, x + 100, startY); // 内容列右移100
+            eCtx.fillText(item.name, x + 100, startY);
             x += colWidths[1];
             eCtx.fillText(item.qty, x, startY);
             x += colWidths[2];
@@ -1846,6 +1994,16 @@
             eCtx.fillText(item.supplier, x, startY);
             startY += rowFontSize + 8;
         });
+
+        // 计算并绘制总价
+        const totalCost = allItems.reduce((sum, item) => sum + item.cost, 0);
+        eCtx.font = `bold ${rowFontSize}px "Microsoft YaHei", sans-serif`;
+        const totalText = `总计：¥${totalCost.toFixed(2)}`;
+        const costColX = startX + colWidths[0] + colWidths[1] + colWidths[2];
+        const costColWidth = colWidths[3];
+        const textWidth = eCtx.measureText(totalText).width;
+        const totalX = costColX + costColWidth - textWidth - 10;
+        eCtx.fillText(totalText, totalX, startY);
 
         eCtx.restore();
 
