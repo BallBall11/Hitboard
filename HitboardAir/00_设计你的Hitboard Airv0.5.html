@@ -627,6 +627,11 @@
             gap: 8px;
             font-size: 0.9rem;
         }
+
+        /* 裁剪辅助线容器默认隐藏 */
+        #guideLineContainer {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -706,21 +711,21 @@
                 </button>
             </div>
 
-            <!-- 定位线选项 -->
-            <div class="option-group" style="margin-top: 8px;">
-                <h3>定位线</h3>
+            <!-- 裁剪辅助线选项容器，初始隐藏，有壁纸时显示 -->
+            <div class="option-group" id="guideLineContainer" style="margin-top: 8px;">
+                <h3>裁剪辅助线：</h3>
                 <div class="radio-group">
                     <div class="radio-row">
                         <input type="radio" name="guideLine" id="guideNone" value="none" checked>
-                        <label for="guideNone">不开启定位线</label>
+                        <label for="guideNone">不开启辅助线</label>
                     </div>
                     <div class="radio-row">
                         <input type="radio" name="guideLine" id="guideCircle" value="circle">
-                        <label for="guideCircle">环形定位线（盖板孔尺寸）</label>
+                        <label for="guideCircle">环形辅助线（盖板孔大小）</label>
                     </div>
                     <div class="radio-row">
                         <input type="radio" name="guideLine" id="guideSquare" value="square">
-                        <label for="guideSquare">14mm×14mm 方形定位线（轴座尺寸）</label>
+                        <label for="guideSquare">方形辅助线（轴座大小）</label>
                     </div>
                 </div>
             </div>
@@ -972,6 +977,7 @@
     const clearWallpaperBtn = document.getElementById('clearWallpaperBtn');
     const autoColorCheckbox = document.getElementById('autoColorCheckbox');
     const paletteContainer = document.getElementById('paletteContainer');
+    const guideLineContainer = document.getElementById('guideLineContainer'); // 新增
     const exportWallpaperBtn = document.getElementById('exportWallpaperBtn');
     const exportProductBtn = document.getElementById('exportProductBtn');
     const editableNameSpan = document.getElementById('editableName');
@@ -1148,7 +1154,6 @@
         if (guideNone.checked) guideLineMode = 'none';
         else if (guideCircle.checked) guideLineMode = 'circle';
         else if (guideSquare.checked) guideLineMode = 'square';
-        // 不触发重绘，只在导出壁纸时使用
     }
     guideNone.addEventListener('change', updateGuideLineMode);
     guideCircle.addEventListener('change', updateGuideLineMode);
@@ -1479,6 +1484,8 @@
                 paletteContainer.appendChild(swatch);
             });
             paletteContainer.style.display = 'flex';
+            // 显示裁剪辅助线容器
+            guideLineContainer.style.display = 'block';
         } catch (err) {
             console.error('提取调色板失败', err);
             paletteContainer.style.display = 'none';
@@ -1562,6 +1569,10 @@
         panelColorActive = false;
         wallpaperStatus.innerText = '未设置壁纸';
         paletteContainer.style.display = 'none';
+        // 隐藏裁剪辅助线容器并重置选项
+        guideLineContainer.style.display = 'none';
+        guideNone.checked = true;
+        updateGuideLineMode(); // 确保变量同步
         draw();
     });
 
