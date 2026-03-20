@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>设计你的 Hitboard Air～（支持七星布局）</title>
+    <title>Hitboard Creator~(1.01)</title>
     <!-- 引入 Color Thief 库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
     <style>
@@ -632,6 +632,22 @@
         #guideLineContainer {
             display: none;
         }
+
+        /* 加键样式二级菜单（默认隐藏） */
+        #keyStyleContainer {
+            margin-top: 10px;
+            margin-left: 20px;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 12px;
+            display: none;
+        }
+        .theme-pink #keyStyleContainer {
+            background: rgba(255,200,200,0.2);
+        }
+        #keyStyleContainer .radio-row {
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
@@ -671,6 +687,17 @@
                 <div class="radio-row">
                     <input type="radio" name="directionLayout" id="layoutExplorer" value="explorer">
                     <label for="layoutExplorer">七星布局（方向键调低，可容纳 W 键或 Shift 键）</label>
+                </div>
+            </div>
+            <!-- 加键样式二级菜单（仅七星布局时显示） -->
+            <div id="keyStyleContainer">
+                <div class="radio-row">
+                    <input type="radio" name="keyStyle" id="keyStyleTriangle" value="triangle" checked>
+                    <label for="keyStyleTriangle">加键样式：三角形</label>
+                </div>
+                <div class="radio-row">
+                    <input type="radio" name="keyStyle" id="keyStyleCircle" value="circle">
+                    <label for="keyStyleCircle">加键样式：圆形 (22mm)</label>
                 </div>
             </div>
         </div>
@@ -839,7 +866,8 @@
         23: 23.5 / 2 * SCALE,   // 117.5px (23mm按键)
         26: 26.5 / 2 * SCALE,   // 132.5px (26mm按键)
         5: 5.4 / 2 * SCALE,      // 27px (5mm按键)
-        10: 10 / 2 * SCALE       // 50px (10mm按键，备用)
+        10: 10 / 2 * SCALE,      // 50px (10mm按键，备用)
+        22: 22 / 2 * SCALE       // 110px (22mm按键，用于圆形加键)
     };
 
     // 物理坐标（毫米，以外壳左下角为原点） - 原始按键
@@ -910,7 +938,7 @@
         x: centerPhysX + off.dx,
         y: centerPhysY + off.dy
     }));
-    // 创建探索版按键对象，Left,Down,Right为圆形，W和Shift为三角形
+    // 创建探索版按键对象，Left,Down,Right为圆形，W和Shift为三角形（初始为三角形，具体形状由keyStyle决定，但坐标固定）
     const explorerButtons = [];
     // Left (20)
     explorerButtons.push({
@@ -933,16 +961,16 @@
         r: buttonRadii[23],
         shape: 'circle'
     });
-    // W (23) - 三角形，边长33mm，倒角R5，顺时针55°
+    // W (23) - 默认三角形数据，但绘制时根据keyStyle决定
     explorerButtons.push({
         cx: Math.round(explorerPhys[3].x * SCALE),
         cy: Math.round(outerH - explorerPhys[3].y * SCALE),
-        size: 28 * SCALE,          // 目标边长280px (您调整后的值)
+        size: 28 * SCALE,          // 三角形目标边长280px (保留，用于三角形绘制)
         cornerRadius: 5 * SCALE,    // 倒角半径50px
         angle: 55,                  // 顺时针55°
-        shape: 'triangle'
+        shape: 'triangle'           // 初始形状标记为三角形，实际绘制时可能覆盖
     });
-    // Shift (24) - 三角形，边长33mm，倒角R5，逆时针15°
+    // Shift (24)
     explorerButtons.push({
         cx: Math.round(explorerPhys[4].x * SCALE),
         cy: Math.round(outerH - explorerPhys[4].y * SCALE),
@@ -984,6 +1012,9 @@
 
     // 方向键布局: 'standard' 或 'explorer'，默认标准版
     let directionLayout = 'standard';
+
+    // 加键样式: 'triangle' 或 'circle'（仅七星布局下有效）
+    let keyStyle = 'triangle';
 
     // 定位线模式: 'none', 'circle', 'square'
     let guideLineMode = 'none';
@@ -1050,6 +1081,11 @@
     // 布局单选按钮
     const layoutStandard = document.getElementById('layoutStandard');
     const layoutExplorer = document.getElementById('layoutExplorer');
+
+    // 加键样式单选按钮
+    const keyStyleTriangle = document.getElementById('keyStyleTriangle');
+    const keyStyleCircle = document.getElementById('keyStyleCircle');
+    const keyStyleContainer = document.getElementById('keyStyleContainer');
 
     // 定位线单选按钮
     const guideNone = document.getElementById('guideNone');
@@ -1194,14 +1230,30 @@
     keys1.addEventListener('change', updateExtraKeyMode);
     keys2.addEventListener('change', updateExtraKeyMode);
 
-    // 监听布局选择
+    // 监听布局选择，并显示/隐藏加键样式菜单
     function updateDirectionLayout() {
-        if (layoutStandard.checked) directionLayout = 'standard';
-        else if (layoutExplorer.checked) directionLayout = 'explorer';
+        if (layoutStandard.checked) {
+            directionLayout = 'standard';
+            keyStyleContainer.style.display = 'none';
+        } else if (layoutExplorer.checked) {
+            directionLayout = 'explorer';
+            keyStyleContainer.style.display = 'block';
+        }
         draw();
     }
     layoutStandard.addEventListener('change', updateDirectionLayout);
     layoutExplorer.addEventListener('change', updateDirectionLayout);
+    // 初始隐藏（因为默认standard）
+    keyStyleContainer.style.display = 'none';
+
+    // 监听加键样式
+    function updateKeyStyle() {
+        if (keyStyleTriangle.checked) keyStyle = 'triangle';
+        else if (keyStyleCircle.checked) keyStyle = 'circle';
+        draw();
+    }
+    keyStyleTriangle.addEventListener('change', updateKeyStyle);
+    keyStyleCircle.addEventListener('change', updateKeyStyle);
 
     // 监听定位线模式
     function updateGuideLineMode() {
@@ -1234,7 +1286,7 @@
         return `#${(r < 16 ? '0' : '') + r.toString(16)}${(g < 16 ? '0' : '') + g.toString(16)}${(b < 16 ? '0' : '') + b.toString(16)}`;
     }
 
-    // 绘制文本LOGO（修改为 Hitboard，并保持宽度不变）
+    // 绘制文本LOGO
     function drawLogoText(ctx, panelColor) {
         if (!panelColor) return;
         const darkColor = darkenColor(panelColor, -5);
@@ -1244,7 +1296,7 @@
         ctx.textBaseline = 'bottom';
         const metrics = ctx.measureText(logoText);
         const actualWidth = metrics.width;
-        const scale = targetLogoWidth / actualWidth; // 根据新文字宽度缩放，使最终宽度等于 targetLogoWidth
+        const scale = targetLogoWidth / actualWidth; // 缩放至目标宽度
         ctx.translate(logoPosX, outerH - logoPosY);
         ctx.scale(scale, scale);
         ctx.fillStyle = darkColor;
@@ -1426,8 +1478,11 @@
 
             ctx.save();
 
-            if (btn.shape === 'circle') {
-                // 圆形按键保持原样：填充带透明度，描边黑色
+            // 判断是否为W/Shift（索引23、24）且处于七星布局下，根据keyStyle决定绘制方式
+            const isWS = (idx === 23 || idx === 24) && directionLayout === 'explorer';
+
+            if (btn.shape === 'circle' && !isWS) {
+                // 普通圆形按键（包括20-22等）
                 ctx.shadowColor = 'rgba(0,0,0,0.2)';
                 ctx.shadowBlur = 15;
                 ctx.fillStyle = `rgba(${parseInt(buttonColor.slice(1,3),16)},${parseInt(buttonColor.slice(3,5),16)},${parseInt(buttonColor.slice(5,7),16)},${alphaButton})`;
@@ -1438,18 +1493,43 @@
                 ctx.strokeStyle = '#333333';
                 ctx.lineWidth = 0.5;
                 ctx.stroke();
-            } else if (btn.shape === 'triangle') {
-                // 三角形按键（W/Shift）：添加近距不扩散的黑色阴影（透明度0.3，原0.6的一半）
+            } else if (btn.shape === 'triangle' && !isWS) {
+                // 普通三角形按键（目前只有W/Shift，但以防万一）
+                // 三角形按键（W/Shift）：添加近距不扩散的黑色阴影（透明度0.3）
                 ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                ctx.shadowBlur = 0;          // 不模糊
-                ctx.shadowOffsetX = 2;        // 向右偏移2px
-                ctx.shadowOffsetY = 2;        // 向下偏移2px
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
                 const r = parseInt(buttonColor.slice(1,3),16);
                 const g = parseInt(buttonColor.slice(3,5),16);
                 const b = parseInt(buttonColor.slice(5,7),16);
                 const triColor = `rgba(${r},${g},${b},1.0)`;
-                // 调用精确三角形绘制函数，传入目标尺寸和倒角半径
                 drawRoundedTriangleExact(ctx, btn.cx, btn.cy, btn.size, btn.cornerRadius, btn.angle, triColor);
+            } else if (isWS) {
+                // W/Shift 根据keyStyle绘制
+                if (keyStyle === 'triangle') {
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    const r = parseInt(buttonColor.slice(1,3),16);
+                    const g = parseInt(buttonColor.slice(3,5),16);
+                    const b = parseInt(buttonColor.slice(5,7),16);
+                    const triColor = `rgba(${r},${g},${b},1.0)`;
+                    drawRoundedTriangleExact(ctx, btn.cx, btn.cy, btn.size, btn.cornerRadius, btn.angle, triColor);
+                } else { // circle
+                    // 圆形：半径22mm，与普通圆形样式一致
+                    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = `rgba(${parseInt(buttonColor.slice(1,3),16)},${parseInt(buttonColor.slice(3,5),16)},${parseInt(buttonColor.slice(5,7),16)},${alphaButton})`;
+                    ctx.beginPath();
+                    ctx.arc(btn.cx, btn.cy, buttonRadii[22], 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = '#333333';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
             }
             ctx.restore();
         });
@@ -1819,7 +1899,7 @@
             }
             eCtx.restore(); // 恢复剪裁，准备绘制定位线
 
-            // 根据定位线模式绘制
+            // 根据定位线模式绘制（注意：W/Shift的定位线固定为圆角矩形，不受keyStyle影响）
             if (guideLineMode !== 'none') {
                 // 计算盖板中心在画布上的像素坐标
                 const panelCenterX = leftPx + innerW/2;
@@ -1877,8 +1957,7 @@
                         eCtx.arc(x, y, r5, 0, 2 * Math.PI);
                         eCtx.stroke();
                     } else if (idx === 23 || idx === 24) {
-                        // 对于W/Shift，暂用矩形表示（避免复杂三角形辅助线，后续可优化）
-                        // 为简化，绘制16x16mm圆角矩形（同原有逻辑）
+                        // 对于W/Shift，固定绘制16x16mm圆角矩形（不受keyStyle影响）
                         const half = 8 * SCALE; // 80px
                         const radius = 0.4 * SCALE; // 4px
                         eCtx.beginPath();
@@ -1969,8 +2048,15 @@
         if (extraKeyMode === '0') keyName = '不加键';
         else if (extraKeyMode === '1') keyName = '加 1 键';
         else keyName = '加 2 键';
+        // 加键样式名称（仅七星布局时显示）
+        let styleName = '';
+        if (directionLayout === 'explorer') {
+            styleName = keyStyle === 'triangle' ? '三角形' : '圆形';
+        }
 
-        const titleText = userName ? `${userName} 的 Hitboard Air（${layoutName}、${keyName}）` : `你的 Hitboard Air（${layoutName}、${keyName}）`;
+        const titleText = userName ? 
+            `${userName} 的 Hitboard Air（${layoutName}、${keyName}${styleName ? '、'+styleName : ''}）` : 
+            `你的 Hitboard Air（${layoutName}、${keyName}${styleName ? '、'+styleName : ''}）`;
         eCtx.font = 'bold 36px "Microsoft YaHei", sans-serif';
         eCtx.fillStyle = '#1e2b3c';
         eCtx.textAlign = 'center';
