@@ -610,8 +610,8 @@
 
     editableNameSpan.addEventListener('click', () => { const newName = prompt('请输入你的名字（留空则保持“你”）', userName); if (newName !== null) { userName = newName.trim(); updateTitle(); } });
     function updateTitle() {
-        if (userName) mainTitleDiv.innerHTML = `<span id="editableName" class="editable-name">${userName}</span> 的 Hitboard Air~`;
-        else mainTitleDiv.innerHTML = `<span id="editableName" class="editable-name">你</span> 的 Hitboard Air`;
+        if (userName) mainTitleDiv.innerHTML = `<span id="editableName" class="editable-name">${userName}</span> 的 Hitboard Air。`;
+        else mainTitleDiv.innerHTML = `<span id="editableName" class="editable-name">你</span> 的 Hitboard Air。`;
         document.getElementById('editableName').addEventListener('click', () => { const newName = prompt('请输入你的名字（留空则保持“你”）', userName); if (newName !== null) { userName = newName.trim(); updateTitle(); } });
     }
 
@@ -1162,7 +1162,7 @@
         const joystickText = joystickEnabled ? '、摇杆' : '';
 
         const titleText = userName ? 
-            `${userName} 的 Hitboard Air~（左手:${layoutName}、右手:${rightHandName}${styleName ? '、'+styleName : ''}${joystickText}）` :
+            `${userName} 的 Hitboard Air。（左手:${layoutName}、右手:${rightHandName}${styleName ? '、'+styleName : ''}${joystickText}）` :
             `你的 Hitboard Air（左手:${layoutName}、右手:${rightHandName}${styleName ? '、'+styleName : ''}${joystickText}）`;
         eCtx.font = 'bold 36px "Microsoft YaHei", sans-serif';
         eCtx.fillStyle = '#1e2b3c'; eCtx.textAlign = 'center';
