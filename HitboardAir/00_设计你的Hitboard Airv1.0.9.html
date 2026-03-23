@@ -159,7 +159,7 @@
 
     <div class="preview-area">
         <div class="main-title" id="mainTitle">
-            <span id="editableName" class="editable-name">你</span> 的 Hitboard Air
+            <span id="editableName" class="editable-name">你</span> 的 Hitboard Air。
         </div>
         <div class="canvas-wrapper">
             <div class="product-canvas-container" id="canvasContainer">
@@ -484,9 +484,9 @@
     let isDragging = false, lastMouseX = 0, lastMouseY = 0, userName = '';
 
     // Logo SVG
-    const targetLogoWidth = 80 * SCALE; // 800px
+    const targetLogoWidth = 88 * SCALE; // 800px
     const logoPosX = 11.63 * SCALE;
-    const logoPosY = 5.2 * SCALE;
+    const logoPosY = 5.2 * SCALE - 15;
     const logoSvgTemplate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2336 463" width="2336" height="463">
         <path fill="{color}" d="M34 67h70l4 1v135l-1 6 2-1h48l121 1V70l1-3h72v349l-1 3h-72V272l-171-1 1 2v143l-1 3H38l-4-1V67M2217 77h73v352h-73l-1-24-6 3c-32 15-69 16-102 5q-53-21-78-73-11-27-11-55v-4a116 116 0 0 1 5-37q18-54 68-80a138 138 0 0 1 123 0v2h3l-1-2V77m-127 155a88 88 0 0 0-18 63l4 16 1 3a74 74 0 0 0 21 31 82 82 0 0 0 109 2l3-2a79 79 0 0 0 25-60v-3q-1-33-24-57a89 89 0 0 0-44-22c-29-4-58 7-77 29M1628 149h3q38 1 70 21v-18h74v268h-74v-22l-6 4a135 135 0 0 1-199-87l-1-3a137 137 0 0 1 30-116l2-3h2l1-2c11-20 42-32 63-38q18-4 35-4m-63 82a81 81 0 0 0 6 112l2 2q16 14 36 19l3 1a81 81 0 0 0 95-59q8-33-9-65a88 88 0 0 0-55-38c-30-6-58 7-78 28M904 67h70v96l19-8 19-5a136 136 0 0 1 152 92l1 2q6 19 5 40v2q0 18-4 34l-1 2c-9 33-32 62-61 79-30 17-70 23-104 14q-33-10-59-34l-3-3q-22-21-32-52l-1-2a147 147 0 0 1-5-54V74q-1-9 4-7m72 161-2 2a82 82 0 0 0-20 58q2 32 25 55l2 2q23 21 54 21 37-1 61-27 23-27 21-62-3-28-21-48l-2-2a84 84 0 0 0-58-25q-36 0-60 26M647 68h61l4 1v84h108v69l-1 4H712v31c0 20 0 20 5 40l1 3q5 11 12 20l2 2c10 13 27 21 43 24l37 1h3l5 1v67l-1 4h-27a149 149 0 0 1-108-41v-2l-3-1-7-8-2-3q-23-29-30-65l-1-4-1-22-1-4V74c0-7 1-6 8-6M1410 175q46 35 54 93 3 26-4 52l-1 2a134 134 0 0 1-65 81l-3 2a133 133 0 0 1-157-25l-2-2q-24-24-33-57l-1-3q-10-41 4-80l1-3a138 138 0 0 1 100-84l3-1c36-6 75 3 104 25m-140 53-2 2a81 81 0 0 0-8 97l1 3a81 81 0 0 0 63 36h2a83 83 0 0 0 84-66q6-32-11-59a86 86 0 0 0-55-38q-43-5-74 25M1958 152h36v73h-25q-34 1-60 22a79 79 0 0 0-21 59v24l-1 20v70h-73l-1-9v-99c1-47 13-86 47-120 25-25 62-40 98-40M473 151h62l4 1v267h-74V154q1-4 8-3M520 43q13 8 19 22 4 17-5 33-9 12-23 16-17 2-31-8l-3-2v-2h-2l-3-5-2-2q-7-16-2-32l4-7 2-2c11-14 30-18 46-11"/>
     </svg>`;
@@ -519,7 +519,7 @@
                 const targetW = targetLogoWidth;
                 const targetH = (463 / 2336) * targetW;
                 ctx.save();
-                ctx.globalAlpha = 0.14; // 透明度降低30%
+                ctx.globalAlpha = 0.1; // 透明度降低30%
                 ctx.drawImage(img, logoPosX, outerH - logoPosY - targetH, targetW, targetH);
                 ctx.restore();
             } else {
@@ -610,7 +610,7 @@
 
     editableNameSpan.addEventListener('click', () => { const newName = prompt('请输入你的名字（留空则保持“你”）', userName); if (newName !== null) { userName = newName.trim(); updateTitle(); } });
     function updateTitle() {
-        if (userName) mainTitleDiv.innerHTML = `<span id="editableName" class="editable-name">${userName}</span> 的 Hitboard Air`;
+        if (userName) mainTitleDiv.innerHTML = `<span id="editableName" class="editable-name">${userName}</span> 的 Hitboard Air~`;
         else mainTitleDiv.innerHTML = `<span id="editableName" class="editable-name">你</span> 的 Hitboard Air`;
         document.getElementById('editableName').addEventListener('click', () => { const newName = prompt('请输入你的名字（留空则保持“你”）', userName); if (newName !== null) { userName = newName.trim(); updateTitle(); } });
     }
@@ -1162,7 +1162,7 @@
         const joystickText = joystickEnabled ? '、摇杆' : '';
 
         const titleText = userName ? 
-            `${userName} 的 Hitboard Air（左手:${layoutName}、右手:${rightHandName}${styleName ? '、'+styleName : ''}${joystickText}）` : 
+            `${userName} 的 Hitboard Air~（左手:${layoutName}、右手:${rightHandName}${styleName ? '、'+styleName : ''}${joystickText}）` :
             `你的 Hitboard Air（左手:${layoutName}、右手:${rightHandName}${styleName ? '、'+styleName : ''}${joystickText}）`;
         eCtx.font = 'bold 36px "Microsoft YaHei", sans-serif';
         eCtx.fillStyle = '#1e2b3c'; eCtx.textAlign = 'center';
@@ -1240,10 +1240,10 @@
         startY += titleFontSize + 15;
 
         eCtx.font = `bold ${headerFontSize}px "Microsoft YaHei", sans-serif`;
-        const colWidths = [180, 550, 100, 140, 380];
+        const colWidths = [180, 480, 100, 140, 380];
         let x = startX;
         eCtx.fillText('分类', x, startY); x += colWidths[0];
-        eCtx.fillText('内容', x + 150, startY); x += colWidths[1];
+        eCtx.fillText('内容', x + 80, startY); x += colWidths[1];
         eCtx.fillText('数量', x, startY); x += colWidths[2];
         eCtx.fillText('成本估算', x, startY); x += colWidths[3];
         eCtx.fillText('厂家/店铺', x, startY);
